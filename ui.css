@@ -8,12 +8,12 @@
   --faint: #8b929c;
   --line: #e6e8eb;
   --hover: #f1f3f5;
-  --accent: #2f62e0;          /* same blue as the icon */
+  --accent: #0b8457;          /* same emerald as the icon */
   --accent-text: #ffffff;
-  --accent-tint: #edf2fd;
+  --accent-tint: #ecf7f1;
   --off: #9aa1ab;
   --danger: #c4314b;
-  --focus: #2f62e0;
+  --focus: #0b8457;
   color-scheme: light;
 }
 @media (prefers-color-scheme: dark) {
@@ -25,12 +25,12 @@
     --faint: #7c838d;
     --line: #34363b;
     --hover: #2a2c30;
-    --accent: #6b93f5;
-    --accent-text: #0d1630;
-    --accent-tint: #243150;
+    --accent: #3ecf8e;
+    --accent-text: #04281a;
+    --accent-tint: #183a2b;
     --off: #6c727b;
     --danger: #f2788c;
-    --focus: #8aa9f7;
+    --focus: #6ee7b7;
     color-scheme: dark;
   }
 }
