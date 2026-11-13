@@ -1,0 +1,156 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Popup Guard settings</title>
+  <link rel="stylesheet" href="ui.css">
+  <style>
+    body { background: var(--bg-sunken); font-size: 13px; }
+    main { max-width: 680px; margin: 0 auto; padding: 28px 16px 64px; }
+    header { display: flex; align-items: center; gap: 10px; margin-bottom: 22px; }
+    header img { width: 28px; height: 28px; }
+    header h1 { font-size: 18px; font-weight: 600; margin: 0; }
+
+    h2 { font-size: 13px; font-weight: 600; margin: 26px 4px 8px; }
+    .group { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+    .row { display: flex; align-items: center; gap: 16px; padding: 12px 16px; min-height: 52px; }
+    .row + .row, .row + details, details + .row { border-top: 1px solid var(--line); }
+    .row .label { flex: 1; min-width: 0; }
+    .row .label small { display: block; color: var(--muted); font-size: 12px; margin-top: 1px; }
+    .row.master .label { font-weight: 600; }
+
+    /* lists of sites */
+    .site-row { min-height: 44px; padding: 8px 8px 8px 16px; }
+    .site-row .name { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .remove { width: 30px; height: 30px; border: 0; background: none; border-radius: 6px; color: var(--muted); display: grid; place-items: center; }
+    .remove:hover { background: var(--hover); color: var(--danger); }
+    .empty-row { color: var(--muted); }
+    form.add-row { display: flex; gap: 8px; padding: 10px 16px; }
+    form.add-row input {
+      flex: 1; min-width: 0; padding: 6px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg);
+    }
+    form.add-row input:focus { outline: 2px solid var(--focus); outline-offset: -1px; border-color: transparent; }
+    form.add-row .error { color: var(--danger); font-size: 12px; align-self: center; }
+
+    details > summary {
+      list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; padding: 12px 16px; color: var(--muted);
+    }
+    details > summary::-webkit-details-marker { display: none; }
+    details > summary:hover { background: var(--hover); }
+    details > summary svg { transition: transform .15s; }
+    details[open] > summary svg { transform: rotate(90deg); }
+    .builtin { padding: 0 16px 12px; color: var(--muted); line-height: 1.7; }
+
+    /* activity */
+    .activity-head { display: flex; align-items: baseline; gap: 6px; padding: 14px 16px; }
+    .activity-head b { font-size: 20px; font-weight: 650; font-variant-numeric: tabular-nums; }
+    .activity-head span { color: var(--muted); }
+    .activity-head .spacer { flex: 1; }
+    ul.activity { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+    ul.activity li { display: flex; align-items: center; gap: 12px; padding: 9px 16px; }
+    ul.activity li + li { border-top: 1px solid var(--line); }
+    ul.activity .what { flex: 1; min-width: 0; }
+    ul.activity .host { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    ul.activity .meta { color: var(--muted); font-size: 12px; }
+    ul.activity .empty { color: var(--muted); padding: 16px; }
+
+    .about { padding: 14px 16px; color: var(--muted); line-height: 1.55; }
+    .about p { margin: 0 0 8px; }
+    .about ol { margin: 0 0 8px; padding-left: 18px; }
+    .about b { color: var(--text); font-weight: 600; }
+
+    .footer { display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding: 0 4px; color: var(--faint); font-size: 12px; }
+    .toast {
+      position: fixed; left: 50%; bottom: 20px; transform: translate(-50%, 8px); opacity: 0;
+      background: var(--text); color: var(--bg); padding: 7px 14px; border-radius: 8px; font-size: 12px; transition: opacity .15s, transform .15s;
+      pointer-events: none;
+    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+  </style>
+</head>
+<body>
+<main>
+  <header>
+    <img src="icons/icon48.png" alt="">
+    <h1>Popup Guard</h1>
+  </header>
+
+  <div class="group">
+    <label class="row master">
+      <span class="label">Block ad popups on all sites<small id="masterHint">Stops sites from opening tabs you didn't ask for</small></span>
+      <span class="switch"><input type="checkbox" id="enabled"><span class="track"></span></span>
+    </label>
+  </div>
+
+  <h2>Extra protection</h2>
+  <div class="group">
+    <label class="row">
+      <span class="label">Close tabs that slip through<small>If a site still opens a tab you didn't click a link for, close it and bring you back</small></span>
+      <span class="switch"><input type="checkbox" data-opt="closeStray"><span class="track"></span></span>
+    </label>
+    <label class="row">
+      <span class="label">Undo ad redirects<small>When an ad moves your current tab to another site right after opening a copy of the page</small></span>
+      <span class="switch"><input type="checkbox" data-opt="tabUnder"><span class="track"></span></span>
+    </label>
+    <label class="row">
+      <span class="label">Remove invisible click traps<small>Transparent links stretched over the page that turn any click into an ad</small></span>
+      <span class="switch"><input type="checkbox" data-opt="overlays"><span class="track"></span></span>
+    </label>
+    <label class="row">
+      <span class="label">Block ad domains<small>Stop scripts and frames from the domains listed below from loading</small></span>
+      <span class="switch"><input type="checkbox" data-opt="blocklist"><span class="track"></span></span>
+    </label>
+    <label class="row">
+      <span class="label">Learn ad domains as you browse<small>A domain that keeps trying to open popups you didn't ask for is added to the list below</small></span>
+      <span class="switch"><input type="checkbox" data-opt="learn"><span class="track"></span></span>
+    </label>
+    <label class="row">
+      <span class="label">Show count on toolbar icon<small>Number of popups blocked on the current tab</small></span>
+      <span class="switch"><input type="checkbox" data-opt="badge"><span class="track"></span></span>
+    </label>
+  </div>
+
+  <h2>Sites where Popup Guard is off</h2>
+  <div class="group" id="exceptions"></div>
+
+  <h2>Always allow popups to</h2>
+  <div class="group" id="trustedHosts"></div>
+
+  <h2>Blocked ad domains</h2>
+  <div class="group" id="adDomains"></div>
+
+  <h2 id="activity">Activity</h2>
+  <div class="group">
+    <div class="activity-head">
+      <b id="total">0</b><span>blocked since install</span>
+      <span class="spacer"></span>
+      <button class="text-btn" id="clear">Clear</button>
+    </div>
+    <ul class="activity" id="recent"></ul>
+  </div>
+
+  <h2 id="how">How it works</h2>
+  <div class="group about">
+    <p>Browsers only let a site open a new tab while you click. Ad popups use that moment to open a tab you never asked for. Popup Guard lets a new tab open only when:</p>
+    <ol>
+      <li>you clicked a real link,</li>
+      <li>the site's own code opened it (a download button, for example),</li>
+      <li>it's a sign-in, payment or share window, or a site you always allow,</li>
+      <li>it stays on the same site.</li>
+    </ol>
+    <p>If a button you trust doesn't open, use <b>Allow popups for 30 seconds</b> in the toolbar menu and click it again.</p>
+  </div>
+
+  <div class="footer">
+    <span id="version"></span>
+    <button class="text-btn" id="resetAll">Reset all settings</button>
+  </div>
+</main>
+<div class="toast" id="toast" role="status"></div>
+
+<template id="removeIcon"><svg class="i" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></svg></template>
+<script src="common.js"></script>
+<script src="options.js"></script>
+</body>
+</html>

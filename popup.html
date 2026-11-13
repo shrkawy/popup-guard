@@ -1,0 +1,127 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Popup Guard</title>
+  <link rel="stylesheet" href="ui.css">
+  <style>
+    body { width: 320px; }
+
+    /* top bar */
+    .bar { display: flex; align-items: center; gap: 8px; padding: 10px 12px; }
+    .bar img { width: 18px; height: 18px; }
+    .bar strong { flex: 1; font-size: 13px; }
+    .icon-btn {
+      width: 28px; height: 28px; display: grid; place-items: center; border: 0; background: none;
+      border-radius: 6px; color: var(--muted);
+    }
+    .icon-btn:hover { background: var(--hover); color: var(--text); }
+
+    /* paused banner */
+    .paused-banner {
+      display: none; align-items: center; justify-content: space-between; gap: 8px;
+      margin: 0 12px 4px; padding: 8px 10px; border-radius: 8px; background: var(--bg-sunken); color: var(--muted);
+    }
+    body.paused .paused-banner { display: flex; }
+
+    /* hero: the one control that matters */
+    .hero { text-align: center; padding: 14px 16px 18px; }
+    .site { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .power {
+      width: 76px; height: 76px; margin: 14px auto 10px; border-radius: 50%; display: grid; place-items: center;
+      border: 0; background: var(--accent); color: var(--accent-text); transition: background .15s, color .15s;
+    }
+    .power svg { width: 34px; height: 34px; stroke-width: 2.2; }
+    .power:hover { filter: brightness(1.06); }
+    .power.is-off { background: var(--bg-sunken); color: var(--off); box-shadow: inset 0 0 0 1.5px var(--line); }
+    .power:disabled { cursor: default; filter: none; }
+    .state { font-weight: 600; }
+    .hint { color: var(--muted); font-size: 12px; margin-top: 2px; }
+
+    /* headline number */
+    .count { display: flex; align-items: baseline; justify-content: center; gap: 8px; padding: 2px 16px 14px; }
+    .count b { font-size: 28px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+    .count span { color: var(--muted); }
+    .totals { text-align: center; color: var(--faint); font-size: 12px; margin-top: -8px; padding-bottom: 14px; }
+
+    /* rows */
+    .rows { border-top: 1px solid var(--line); }
+    .row {
+      display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 14px; border: 0;
+      border-bottom: 1px solid var(--line); background: none; text-align: left;
+    }
+    button.row:hover { background: var(--hover); }
+    .row .label { flex: 1; min-width: 0; }
+    .row .label small { display: block; color: var(--muted); font-size: 12px; }
+    .row .aside { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+    .row svg.i { color: var(--muted); }
+    button.row:disabled { color: var(--faint); cursor: default; background: none; }
+    .chev { transition: transform .15s; }
+    .row[aria-expanded="true"] .chev { transform: rotate(90deg); }
+
+    /* recent activity (hidden until asked for) */
+    .recent { display: none; padding: 2px 14px 8px; border-bottom: 1px solid var(--line); background: var(--bg-sunken); }
+    .recent.open { display: block; }
+    .recent ul { list-style: none; margin: 0; padding: 0; }
+    .recent li { display: flex; align-items: center; gap: 10px; padding: 7px 0; }
+    .recent li + li { border-top: 1px solid var(--line); }
+    .recent .what { flex: 1; min-width: 0; }
+    .recent .host { font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .recent .meta { color: var(--muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .recent .empty { color: var(--muted); padding: 10px 0; text-align: center; }
+    .recent .all { display: block; margin: 6px auto 0; }
+  </style>
+</head>
+<body>
+  <div class="bar">
+    <img src="icons/icon32.png" alt="">
+    <strong>Popup Guard</strong>
+    <button class="icon-btn" id="settings" title="Settings" aria-label="Settings">
+      <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+    </button>
+  </div>
+
+  <div class="paused-banner">
+    <span>Paused on all sites</span>
+    <button class="text-btn" id="resume">Resume</button>
+  </div>
+
+  <section class="hero">
+    <div class="site" id="site">—</div>
+    <button class="power" id="power" aria-pressed="true">
+      <svg class="i" viewBox="0 0 24 24"><path d="M12 3v8"/><path d="M6.4 6.6a8 8 0 1 0 11.2 0"/></svg>
+    </button>
+    <div class="state" id="state">Protected</div>
+    <div class="hint" id="hint">Popups from ads are blocked on this site</div>
+  </section>
+
+  <div class="count"><b id="tabCount">0</b><span id="tabLabel">popups blocked on this tab</span></div>
+  <div class="totals" id="totals"></div>
+
+  <div class="rows">
+    <button class="row" id="allow">
+      <svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+      <span class="label">Allow popups for 30 seconds<small>Use if a button you clicked didn't open</small></span>
+      <span class="aside" id="allowLeft"></span>
+    </button>
+    <button class="row" id="toggleRecent" aria-expanded="false" aria-controls="recent">
+      <svg class="i" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+      <span class="label">Recently blocked</span>
+      <span class="aside" id="recentCount"></span>
+      <svg class="i chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg>
+    </button>
+    <div class="recent" id="recent">
+      <ul id="recentList"></ul>
+      <button class="text-btn all" id="allActivity">See all activity</button>
+    </div>
+    <label class="row">
+      <svg class="i" viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      <span class="label">Pause on all sites</span>
+      <span class="switch"><input type="checkbox" id="pause" aria-label="Pause on all sites"><span class="track"></span></span>
+    </label>
+  </div>
+
+  <script src="common.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
