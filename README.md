@@ -56,7 +56,13 @@ node build-ios.js
 - `declarativeNetRequest`: block requests to domains on your blocklist
 - `storage`: save your settings, blocklist and activity
 
-Everything runs locally. No data leaves your browser.
+Protection and activity logs run locally. Settings and domain lists use Chrome Sync when enabled. The developer receives no browsing data. See [PRIVACY.md](PRIVACY.md).
+
+## Chrome Web Store releases
+
+See [PUBLISHING.md](PUBLISHING.md) for the first store upload and automatic updates from GitHub releases. The workflow builds ZIPs now; store publishing requires developer registration, item IDs, and credentials.
+
+Read the [privacy policy](PRIVACY.md) for data handling and storage details.
 
 ## License
 

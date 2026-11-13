@@ -1,0 +1,20 @@
+[
+  "manifest.json",
+  "background.js",
+  "common.js",
+  "inject.js",
+  "relay.js",
+  "options.html",
+  "options.js",
+  "popup.html",
+  "popup.js",
+  "ui.css",
+  "icons/icon16.png",
+  "icons/icon32.png",
+  "icons/icon48.png",
+  "icons/icon128.png",
+  "icons/off16.png",
+  "icons/off32.png",
+  "icons/off48.png"
+]
+
