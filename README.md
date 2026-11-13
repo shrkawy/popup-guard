@@ -57,3 +57,7 @@ node build-ios.js
 - `storage`: save your settings, blocklist and activity
 
 Everything runs locally. No data leaves your browser.
+
+## License
+
+MIT. See [LICENSE](LICENSE).
